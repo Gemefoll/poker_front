@@ -21,6 +21,7 @@ export async function getAccessToken(apiUrl) {
         console.warn("Request failed:", error)
     }
     try {
+        console.log("Refresh initiated")
         const res = await fetch(apiUrl + "/refresh", {
             method: "GET",
             headers: {
@@ -35,8 +36,11 @@ export async function getAccessToken(apiUrl) {
         Cookies.set('RefreshToken', data.RefreshToken, {expires: 30})
         accessToken = Cookies.get("AccessToken")
         refreshToken = Cookies.get("RefreshToken")
+        console.log("Successful refresh!")
     } catch (error) {
         console.warn("Request failed:", error)
+        Cookies.remove('AccessToken')
+        Cookies.remove('RefreshToken')
         return null
     }
     return accessToken

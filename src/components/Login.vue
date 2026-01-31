@@ -7,11 +7,11 @@ const msg = ref("")
 const state = ref(0)
 
 function validateName() {
-    return /[!-~]{1,20}/.test(username.value)
+    return /^[!-~]{1,20}$/.test(username.value)
 }
 
 function validatePassword() {
-    return /[!-~]{6,20}/.test(password.value)
+    return /^[!-~]{6,20}$/.test(password.value)
 }
 
 function sendRegistrationData() {

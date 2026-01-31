@@ -1,5 +1,9 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, getCurrentInstance } from 'vue'
+import Cookies from 'js-cookie'
+const { appContext } = getCurrentInstance()
+
+const apiUrl = appContext.config.globalProperties.$apiUrl
 
 const username = ref("")
 const password = ref("")
@@ -7,14 +11,14 @@ const msg = ref("")
 const state = ref(0)
 
 function validateName() {
-    return /[!-~]{1,20}/.test(username.value)
+    return /^[!-~]{1,20}$/.test(username.value)
 }
 
 function validatePassword() {
-    return /[!-~]{6,20}/.test(password.value)
+    return /^[!-~]{6,20}$/.test(password.value)
 }
 
-function sendRegistrationData() {
+async function sendRegistrationData() {
     if (!validateName()) {
         msg.value = "You are dolbaeb, name is bad"
         state.value = 1
@@ -25,13 +29,33 @@ function sendRegistrationData() {
         state.value = 1
         return
     }
-    const user = {
-        Name: username.value,
-        Pass: password.value
+    try {
+        const user = {
+            Name: username.value,
+            Pass: password.value
+        }
+        const res = await fetch(apiUrl + "/user/create", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "accept": "application/json",
+            },
+            body: JSON.stringify(user)
+        })
+        if (!res.ok) {
+            throw new Error(`HTTP error! Status: ${res.status}`);
+        }
+        const data = await res.json()
+        Cookies.set('AccessToken', data.AccessToken, {expires: 30})
+        Cookies.set('RefreshToken', data.RefreshToken, {expires: 30})
+        console.log(Cookies.get('AccessToken'))
+        console.log(Cookies.get('RefreshToken'))
+        msg.value = "Success!"
+        state.value = 2
+    } catch (error) {
+        console.error("Request failed:", error)
+        msg.value = "You are dolbaeb, reason: " + error
     }
-    const userJson = JSON.stringify(user)
-    msg.value = "You are good, " + userJson
-    state.value = 2
 }
 
 </script>
